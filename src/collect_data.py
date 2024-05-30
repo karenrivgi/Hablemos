@@ -14,7 +14,7 @@ import numpy as np
 # Definición de parámetros para la recoleccion de datos
 # Señas a interpretar
 senas = np.array(['Hola', 'Buenos dias', 'Como estas', 'Amigo', 'Adios'])
-dataset_size = 1 # Número de videos a recolectar por seña
+dataset_size = 10 # Número de videos a recolectar por seña
 sequence_length = 70 # Frames de longitud de cada vídeo 
 
 
@@ -57,6 +57,13 @@ for sena in senas:
     # -----------------------------------------------------------
     # Capturar los videos necesarios para la seña actual
     counter = 0
+    # CAMBIAR LA VARIABLE SEGÚN LO DICHO POR EL GRUPO
+    # Gabriel: 0
+    # Karen: 10
+    # Luisa: 20
+    # Felipe: 30
+    # Mateo: 40
+    inicial = 0
 
     while counter < dataset_size:
 
@@ -64,7 +71,7 @@ for sena in senas:
             _, frame = cap.read()
 
             # Mostrar un mensaje de inicio de captura
-            cv2.putText(frame, 'Captura la sena "{}" ({}) presionando "C"'.format(sena, counter), (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 255), 2, cv2.LINE_8)
+            cv2.putText(frame, 'Captura la sena "{}" ({}) presionando "C"'.format(sena, inicial), (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 255), 2, cv2.LINE_8)
             cv2.imshow('frame', frame)
 
             # Esperar a que el usuario presione la tecla 'C'
@@ -73,7 +80,7 @@ for sena in senas:
 
         
         # Crear un objeto VideoWriter para guardar el video
-        video_name = '{}.avi'.format(counter + max_number + 1)
+        video_name = '{}.avi'.format(inicial + max_number + 1)
         video_path = os.path.join(DATA_PATH, sena, video_name)
         frame_width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
         frame_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
@@ -90,6 +97,7 @@ for sena in senas:
                 break
 
         counter += 1
+        inicial += 1
 
         # Liberar el objeto VideoWriter
         out.release()
