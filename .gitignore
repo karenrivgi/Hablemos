@@ -1,3 +1,9 @@
 data
 
 processed_data
+
+logs
+
+action.h5
+
+src/__pycache__

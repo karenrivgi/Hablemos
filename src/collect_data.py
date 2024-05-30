@@ -12,8 +12,9 @@ import numpy as np
 
 
 # Definición de parámetros para la recoleccion de datos
-senas = ['Hoy', 'A' ] # Señas que se van a recolectar
-dataset_size = 2 # Número de videos a recolectar por seña
+# Señas a interpretar
+senas = np.array(['Hola', 'Buenos dias', 'Como estas', 'Amigo', 'Adios'])
+dataset_size = 1 # Número de videos a recolectar por seña
 sequence_length = 70 # Frames de longitud de cada vídeo 
 
 
