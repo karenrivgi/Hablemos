@@ -1,3 +1,5 @@
+
+
 # Importar librerías necesarias
 import os
 import cv2
@@ -6,7 +8,7 @@ import numpy as np
 
 # Definición de parámetros para la recoleccion de datos
 senas = ['Hoy', 'A' ] # Señas que se van a recolectar
-dataset_size = 1 # Número de videos a recolectar por seña
+dataset_size = 2 # Número de videos a recolectar por seña
 sequence_length = 70 # Frames de longitud de cada vídeo 
 
 
