@@ -1,4 +1,9 @@
+"""
+Módulo para colectar los datos para el modelo.
 
+Depeniendo de la cantidad de señas y el número de señas a realizar 
+se exportan en una carpeta data con sub carpetas para cada seña.
+"""
 
 # Importar librerías necesarias
 import os

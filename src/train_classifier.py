@@ -1,3 +1,6 @@
+"""
+Módulo para el entrenamiento del modelo.
+"""
 import os
 import numpy as np
 
