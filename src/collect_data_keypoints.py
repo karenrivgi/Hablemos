@@ -36,7 +36,7 @@ mp_holistic = mp.solutions.holistic # Holistic model
 mp_drawing = mp.solutions.drawing_utils # Drawing utilities
 holistic = mp_holistic.Holistic(min_detection_confidence=0.5, min_tracking_confidence=0.5)
 
-
+# ---------------------------------------------------------------------
 def mediapipe_detection(image, model):
     """
     Función para hacer una predicción con el modelo de MediaPipe.
@@ -57,6 +57,7 @@ def mediapipe_detection(image, model):
     return image, results
 
 
+# ---------------------------------------------------------------------
 def draw_styled_landmarks(image, results):
     """
     Dibuja los landmarks en la imagen de entrada.
@@ -100,18 +101,29 @@ for sena in senas:
     # -----------------------------------------------------------
     # Esperar a que el usuario presione la tecla 'Q' para empezar
     while True:
+
+        # Leer el frame de la cámara
         _, frame = cap.read()
 
         cv2.putText(frame, 'Presiona "Q" para empezar con la sena "{}"'.format(sena), (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2, cv2.LINE_8)
         
-        # Make detections
+        # Detectar los landmarks en el frame
         image, results = mediapipe_detection(frame, holistic)
-        # Draw landmarks
+        # Dibujar los landmarks
         draw_styled_landmarks(image, results)
+        
+        # Mostrar imagen con landmarks
         cv2.imshow('frame', image)
 
+        # Si el usuario presiona la tecla 'X', cerrar la cámara
+        if cv2.waitKey(10) & 0xFF == ord('x'):
+                cap.release()
+                cv2.destroyAllWindows()
+
+        # Si el usuario presiona la tecla 'Q', empezar a capturar los videos
         if cv2.waitKey(25) == ord('q'):
             break
+        
 
     # -----------------------------------------------------------
     # Capturar los videos necesarios para la seña actual
@@ -132,34 +144,40 @@ for sena in senas:
             # Mostrar un mensaje de inicio de captura
             cv2.putText(frame, 'Captura la sena "{}" ({}) presionando "C"'.format(sena, inicial), (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 255), 2, cv2.LINE_8)
             
-            # Make detections
             image, results = mediapipe_detection(frame, holistic)
-            # Draw landmarks
             draw_styled_landmarks(image, results)
+
             cv2.imshow('frame', image)
 
-            # Esperar a que el usuario presione la tecla 'C'
+            # Si el usuario presiona la tecla 'X', cerrar la cámara
+            if cv2.waitKey(10) & 0xFF == ord('x'):
+                cap.release()
+                cv2.destroyAllWindows()
+
+            # Esperar a que el usuario presione la tecla 'C' para capturar el video
             if cv2.waitKey(25) == ord('c'):
                 break
 
+
         # -----------------------------------------------------------
-        # Capturar vídeo de seña
+        # Capturar los frames necesaros para cada vídeo
         for frame_num in range(sequence_length):
             _, frame = cap.read()
 
-            # Make detections
             image, results = mediapipe_detection(frame, holistic)
-            # Draw landmarks
             draw_styled_landmarks(image, results)
+
             cv2.imshow('frame', image)
 
-            # NEW Export keypoints
+            # Extraer los keypoints de los landmarks detectados y guardarlos.
             keypoints = extract_keypoints(results)
             npy_path = os.path.join(DATA_PROCESSED_PATH, sena, str(counter), str(frame_num))
             np.save(npy_path, keypoints)
             
-            if cv2.waitKey(1) & 0xFF == ord('q'): 
-                break
+            # Si el usuario presiona la tecla 'X', cerrar la cámara
+            if cv2.waitKey(10) & 0xFF == ord('x'):
+                cap.release()
+                cv2.destroyAllWindows()
 
         counter += 1
         inicial += 1

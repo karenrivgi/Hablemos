@@ -8,11 +8,11 @@ import numpy as np
 # Librerias asociadas
 from tensorflow.keras.utils import to_categorical # type: ignore
 
-PROCESS_DATA_PATH = './processed_data'
+PROCESS_DATA_PATH = os.path.join('MP_Data') 
 
 # -----------------------------------------------------------
 
-def load_processed_data(PROCESS_DATA_PATH, save_path='processed_data'):
+def load_processed_data(PROCESS_DATA_PATH, save_path='MP_Data'):
     """
     Carga los datos procesados desde los archivos .npy y los organiza en arrays para el entrenamiento del modelo.
 
