@@ -22,9 +22,9 @@ from helpers import (
      )
 
 # Definición de parámetros para la recoleccion de datos
-senas = np.array(['Hola', 'Amigo', 'Como Estas', 'Adios']) # Señas a interpretar
+senas = np.array(['Hola', 'Amigo', 'Bien', 'Como Estas']) # Señas a interpretar
 
-DATASET_SIZE= 3 # Número de videos a recolectar por seña
+DATASET_SIZE= 30 # Número de videos a recolectar por seña
 
 
 # Path for exported data, numpy arrays

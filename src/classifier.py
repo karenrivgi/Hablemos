@@ -16,18 +16,18 @@ from helpers import (
 mp_holistic = mp.solutions.holistic # Holistic model
 mp_drawing = mp.solutions.drawing_utils # Drawing utilities
 
-# Señas a interpretar
-senas = np.array(['Hola', 'Amigo', 'Como Estas', 'Adios'])
+# Definición de parámetros para la recoleccion de datos
+senas = np.array(['Amigo', 'Bien', 'Como Estas', 'Hola']) # Señas a interpretar
 
 # Cargar el modelo entrenado
-model = load_model('action.h5')
+model = load_model('senas.h5')
 
 # Inicializar variables
 sequence = []        # Para almacenar las secuencias de frames
 sentence = []        # Para almacenar las predicciones
 predictions = []     # Para almacenar las predicciones en forma de índice
 THRESHOLD = 0.7      # Umbral para considerar una predicción como válida
-colors = [(245,117,16), (117,245,16), (16,117,245)]  # Colores para la visualización
+colors = [(245,117,16), (117,245,16), (16,117,245), (0,255,0)]  # Colores para la visualización
 
 # Inicializar la captura de video
 cap = cv2.VideoCapture(0)
@@ -48,10 +48,10 @@ with mp_holistic.Holistic(min_detection_confidence=0.5, min_tracking_confidence=
         # Lógica de predicción
         keypoints = extract_keypoints(results)
         sequence.append(keypoints)
-        sequence = sequence[-30:]  # Mantener solo los últimos 30 frames
+        sequence = sequence[-25:]  # Mantener solo los últimos 30 frames
 
         # Si se han capturado 30 frames y hay una mano detectada
-        if len(sequence) == 30 and there_hand(results):
+        if len(sequence) == 25 and there_hand(results):
             print('Hand detected')
             COUNT_FRAME += 1
             print(COUNT_FRAME)
@@ -83,7 +83,7 @@ with mp_holistic.Holistic(min_detection_confidence=0.5, min_tracking_confidence=
                 sentence = sentence[-5:]
 
         # Visualizar las probabilidades
-        image = prob_viz(ultimo_res if ultimo_res is not None else [0, 0, 0], senas, image, colors)
+        image = prob_viz(ultimo_res if ultimo_res is not None else [0, 0, 0, 0], senas, image, colors)
         cv2.rectangle(image, (0,0), (640, 40), (245, 117, 16), -1)
         cv2.putText(image, ' '.join(sentence), (3, 30), 
                     cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2, cv2.LINE_AA)

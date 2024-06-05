@@ -12,7 +12,7 @@ import numpy as np
 
 # -----------------------------------------------------------
 
-def load_processed_data(PROCESS_DATA_PATH, save_path='MP_Data', max_seq_length=15):
+def load_processed_data(PROCESS_DATA_PATH, save_path='MP_Data', max_seq_length=20):
     """
     Carga los datos procesados desde los archivos .npy y los organiza en arrays para el entrenamiento del modelo.
 
