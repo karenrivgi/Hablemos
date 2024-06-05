@@ -11,6 +11,7 @@ from helpers import (
     mediapipe_detection, draw_styled_landmarks,
     extract_keypoints, there_hand, prob_viz
 )
+from sound import text_to_speech
 
 # Traer el modelo holístico de mediapipe
 mp_holistic = mp.solutions.holistic # Holistic model
@@ -48,10 +49,10 @@ with mp_holistic.Holistic(min_detection_confidence=0.5, min_tracking_confidence=
         # Lógica de predicción
         keypoints = extract_keypoints(results)
         sequence.append(keypoints)
-        sequence = sequence[-25:]  # Mantener solo los últimos 30 frames
+        sequence = sequence[-20:]  # Mantener solo los últimos 30 frames
 
         # Si se han capturado 30 frames y hay una mano detectada
-        if len(sequence) == 25 and there_hand(results):
+        if len(sequence) == 20 and there_hand(results):
             print('Hand detected')
             COUNT_FRAME += 1
             print(COUNT_FRAME)
@@ -67,6 +68,8 @@ with mp_holistic.Holistic(min_detection_confidence=0.5, min_tracking_confidence=
                     predictions.append(np.argmax(res))
                     ultimo_res = res
                     print("resultado THRESHOLD", res)
+                    # Traducción de texto a voz
+                    text_to_speech(senas[np.argmax(res)])
 
                     # Actualizar la oración con la nueva predicción
                     if len(sentence) > 0: 
