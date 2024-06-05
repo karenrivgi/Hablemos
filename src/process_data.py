@@ -1,119 +1,75 @@
 """
-Módulo correspondiente al procesamiento de las imágenes.
-
-Se reciben videos con formato tipo .avi de la carpeta data y se
-exportan los datos como archivos tipo .npy en la carpeta processed data.
-
-Por cada vídeo se exportan 70 archivos tipo .npy. Estos archivos contienen
-la información vectorizada y unidimensional de cada uno de los puntos (landmarks)
-de la cara, pose, mano izquiera y mano derecha.
-
-Si son varios vídeos de cada seña se crea la carpeta según el nombre del vídeo.
+Este módulo está diseñado para preparar las etiquetas de los datos para el
+entrenamiento de un modelo de reconocimiento de señas. Carga los datos
+procesados desde archivos .npy, organiza los datos en arrays y ajusta
+las secuencias de frames para que todas tengan la misma longitud utilizando padding.
+Además, guarda los datos procesados en archivos .npy para su uso posterior.
 """
-
-# Manejo de archivos
+# Importar las librerías necesarias
+from tensorflow.keras.utils import to_categorical, pad_sequences  # type: ignore
 import os
-
-# Procesamiento de datos
-import mediapipe as mp
-import cv2
-import matplotlib.pyplot as plt
 import numpy as np
 
-
 # -----------------------------------------------------------
-DATA_PATH = './data'
-PROCESS_DATA_PATH = './processed_data'
 
-# Verificar si el directorio de datos existe, si no, crearlo
-if not os.path.exists(DATA_PATH):
-    print(f"El directorio {DATA_PATH} no existe. Creándolo...")
-    os.makedirs(DATA_PATH)
-
-# Usar mediapipe para encontrar las landmarks 
-mp_holistic = mp.solutions.holistic # Holistic model (Detectar los landmarks)
-mp_drawing = mp.solutions.drawing_utils # Drawing utilities (Dibujar los landmarks)
-mp_holistic = mp_holistic.Holistic(min_detection_confidence=0.5, min_tracking_confidence=0.5)
-
-# De cada frame extraeremos únicamente la info importante: los landmarks o puntitos
-def extract_keypoints(results):
+def load_processed_data(PROCESS_DATA_PATH, save_path='MP_Data', max_seq_length=15):
     """
-    Extrae los puntos clave (landmarks) del cuerpo, la cara y las manos
-    a partir de los resultados de MediaPipe.
+    Carga los datos procesados desde los archivos .npy y los organiza en arrays para el entrenamiento del modelo.
 
     Args:
-        results (mediapipe.python.solutions.holistic.HolisticResults): Los resultados de la detección de MediaPipe Holistic.
+        PROCESS_DATA_PATH (str): La ruta del directorio que contiene los datos procesados organizados por categorías.
+        save_path (str): La ruta donde se guardarán los archivos de datos y etiquetas.
+        max_seq_length (int): Longitud máxima de las secuencias de frames. Las secuencias más cortas se rellenarán con ceros.
 
     Returns:
-        np.ndarray: Un array de forma (num_keypoints,) que contiene los puntos clave del cuerpo, la cara, y las manos.
-                    El array tiene la siguiente estructura:
-                    - Los primeros 132 valores corresponden a los 33 puntos clave del cuerpo (pose),
-                    con cada punto representado por 4 valores (x, y, z, visibility).
-                    - Los siguientes 1404 valores corresponden a los 468 puntos clave de la cara (face),
-                    con cada punto representado por 3 valores (x, y, z).
-                    - Los siguientes 63 valores corresponden a los 21 puntos clave de la mano izquierda
-                    (left hand), con cada punto representado por 3 valores (x, y, z).
-                    - Los últimos 63 valores corresponden a los 21 puntos clave de la mano derecha
-                    (right hand), con cada punto representado por 3 valores (x, y, z).
-
-    Ejemplo:
-        results = holistic.process(image)
-        keypoints = extract_keypoints(results)
+        tuple: Una tupla que contiene dos elementos:
+            - x (np.ndarray): Un array de forma (n_videos, max_seq_length, num_keypoints) que contiene los datos de los videos.
+            - y (np.ndarray): Un array de etiquetas en formato categórico correspondiente a cada video.
     """
-    pose = np.array([[res.x, res.y, res.z, res.visibility] for res in results.pose_landmarks.landmark]).flatten() if results.pose_landmarks else np.zeros(33*4)
-    face = np.array([[res.x, res.y, res.z] for res in results.face_landmarks.landmark]).flatten() if results.face_landmarks else np.zeros(468*3)
-    lh = np.array([[res.x, res.y, res.z] for res in results.left_hand_landmarks.landmark]).flatten() if results.left_hand_landmarks else np.zeros(21*3)
-    rh = np.array([[res.x, res.y, res.z] for res in results.right_hand_landmarks.landmark]).flatten() if results.right_hand_landmarks else np.zeros(21*3)
-    return np.concatenate([pose, face, lh, rh])
+    # Verificar si los archivos de datos ya existen
+    x_path = os.path.join(save_path, 'x_data.npy')
+    y_path = os.path.join(save_path, 'y_data.npy')
+    
+    # Si ya existen, los devuelve inmediatamente
+    if os.path.exists(x_path) and os.path.exists(y_path):
+        x = np.load(x_path)
+        y = np.load(y_path)
+        return x, y
 
-# -----------------------------------------------------------
-# Recorrer las carpetas con los datos
-for dir_ in os.listdir(DATA_PATH):
-    try:
-        # Crear directorio para los datos procesados si no existe
-        if not os.path.exists(os.path.join(PROCESS_DATA_PATH, str(dir_))):
-            os.makedirs(os.path.join(PROCESS_DATA_PATH, str(dir_)))
+    # Obtener las categorías y mapearlas a un número
+    categories = os.listdir(PROCESS_DATA_PATH)
+    categories_map = {category: i for i, category in enumerate(categories)}
+    print(categories_map)
 
-        # -----------------------------------------------------------
-        # Recorrer cada video en la carpeta actual
-        for file_name in os.listdir(os.path.join(DATA_PATH, dir_)):
-            file_path = os.path.join(DATA_PATH, dir_, file_name)
+    # Crear los arrays de los datos y sus correspondientes etiquetas para entrenar el modelo
+    videos, labels = [], []
+    for category in categories:
+        category_path = os.path.join(PROCESS_DATA_PATH, category)
+        for video in os.listdir(category_path):
+            frames = []
+            video_path = os.path.join(category_path, video)
+            for frame_file in os.listdir(video_path):
+                info = np.load(os.path.join(video_path, frame_file))
+                frames.append(info)
+            videos.append(frames)
+            labels.append(categories_map[category])
 
-            # Crear directorio para el video si no existe
-            video_dir_path = os.path.join(PROCESS_DATA_PATH, dir_, str(file_name).split('.')[0])
-            os.makedirs(video_dir_path, exist_ok=True)
-            
-            # Leer el video
-            cap = cv2.VideoCapture(file_path)
-            if not cap.isOpened():
-                print(f"Error al abrir el video {file_path}")
-                continue
-            frame_num = 0
+    # Padding de las secuencias para que todas tengan la misma longitud
+    x = pad_sequences(videos, maxlen=max_seq_length, dtype='float32', padding='post', truncating='post')
+    y = to_categorical(labels).astype(int)
 
-            # -----------------------------------------------------------
-            # Recorrer cada frame del video y guardar sus keypoints
-            while cap.isOpened():
-                ret, frame = cap.read()
-                if not ret: break
+    # Guardar los datos procesados en archivos .npy
+    if not os.path.exists(save_path):
+        os.makedirs(save_path)
+    np.save(x_path, x)
+    np.save(y_path, y)
 
-                # Convertir el color de BGR a RGB
-                frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+    return x, y
 
-                # Procesar la imagen y obtener los resultados
-                results = mp_holistic.process(frame)
 
-                # Extraer los keypoints y guardarlos 
-                if results is not None:
-                    keypoints = extract_keypoints(results)
-                    npy_path = os.path.join(video_dir_path, str(frame_num))
-                    np.save(npy_path, keypoints)
-                    
-                if cv2.waitKey(25) & 0xFF == ord('q'):
-                    break
+if __name__ == "__main__":
+    x_train,y_train = load_processed_data('MP_Data')
+    print(x_train.shape)
+    print(y_train.shape)
 
-                frame_num += 1
-            
-            cap.release()
-            cv2.destroyAllWindows()
-    except Exception as e:
-        print(f"Error procesando la carpeta {dir_}: {e}")
+

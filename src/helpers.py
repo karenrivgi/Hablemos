@@ -1,7 +1,13 @@
+"""
+Módulo con funciones necesarias para el desarrollo de un 
+modelo de reconocimiento de señas.
+"""
+
+# Importar las librerias necesarias
+from typing import NamedTuple
 import cv2
 import numpy as np
 import mediapipe as mp
-from typing import NamedTuple
 
 # Traer el modelo holístico de mediapipe
 mp_holistic = mp.solutions.holistic # Holistic model
@@ -9,7 +15,7 @@ mp_drawing = mp.solutions.drawing_utils # Drawing utilities
 
 
 # ---------------------------------------------------------------------
-def mediapipe_detection(image, model):
+def mediapipe_detection(image, model) -> tuple :
     """
     Función para hacer una predicción con el modelo de MediaPipe.
 
@@ -30,7 +36,7 @@ def mediapipe_detection(image, model):
 
 
 # ---------------------------------------------------------------------
-def draw_styled_landmarks(image, results):
+def draw_styled_landmarks(image, results) -> None:
     """
     Dibuja los landmarks en la imagen de entrada.
 
@@ -64,7 +70,7 @@ def draw_styled_landmarks(image, results):
     
 
 # ---------------------------------------------------------------------
-def extract_keypoints(results):
+def extract_keypoints(results:NamedTuple) -> list:
     """
     Extrae los puntos clave (landmarks) del cuerpo, la cara y las manos
     a partir de los resultados de MediaPipe.
@@ -96,14 +102,37 @@ def extract_keypoints(results):
 
 # ---------------------------------------------------------------------
 def there_hand(results: NamedTuple) -> bool:
+    """
+    Verifica si hay detecciones de manos en los resultados procesados.
+
+    Args:
+        results (NamedTuple): Una tupla nombrada que contiene los resultados procesados de Mediapipe.
+                              Se espera que tenga atributos 'left_hand_landmarks' y 'right_hand_landmarks'.
+
+    Returns:
+        bool: True si se detecta una mano izquierda o derecha; False en caso contrario.
+    """
     return results.left_hand_landmarks or results.right_hand_landmarks
 
 
+
 # ---------------------------------------------------------------------
-def prob_viz(res, actions, input_frame, colors):
+def prob_viz(res, actions, input_frame, colors) -> list:
+    """
+    Visualiza las probabilidades de predicción en el frame de entrada.
+
+    Args:
+        res (list): Lista de probabilidades de predicción generadas por el modelo.
+        actions (list): Lista de nombres de las acciones correspondientes a cada probabilidad.
+        input_frame (np.ndarray): Frame de entrada en el que se visualizarán las probabilidades.
+        colors (list): Lista de tuplas que representan los colores para cada acción.
+
+    Returns:
+        np.ndarray: El frame de salida con las probabilidades visualizadas.
+    """
     output_frame = input_frame.copy()
     for num, prob in enumerate(res):
-        cv2.rectangle(output_frame, (0,60+num*40), (int(prob*100), 90+num*40), colors[num], -1)
-        cv2.putText(output_frame, actions[num], (0, 85+num*40), cv2.FONT_HERSHEY_SIMPLEX, 1, (255,255,255), 2, cv2.LINE_AA)
+        cv2.rectangle(output_frame, (0, 60 + num * 40), (int(prob * 100), 90 + num * 40), colors[num], -1)
+        cv2.putText(output_frame, actions[num], (0, 85 + num * 40), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2, cv2.LINE_AA)
         
     return output_frame

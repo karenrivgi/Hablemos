@@ -5,7 +5,7 @@ Se entrena un modelo de clasificación de señas utilizando un modelo LSTM.
 Se permite probar el modelo comparando las predicciones con las etiquetas reales.
 """
 
-# Librerias estandas
+# Librerias estándar
 import os
 import numpy as np
 
@@ -16,16 +16,20 @@ from tensorflow.keras.layers import LSTM, Dense
 from tensorflow.keras.callbacks import TensorBoard
 
 # Modulo local
-from train_classifier import load_processed_data
+from process_data import load_processed_data
 
 # ---------------------------------------------------------------------
+# Señas a interpretar
+senas = np.array(['Hola', 'Amigo', 'Como Estas', 'Adios']) 
 
-senas = np.array(['Hola','Amigo', 'Adios']) # Señas a interpretar
-PROCESS_DATA_PATH = os.path.join('MP_Data') # Carpeta con los datos procesados
-x, y = load_processed_data(PROCESS_DATA_PATH) # Etiquetar los datos procesados
+# Carpeta con los datos procesados
+PROCESS_DATA_PATH = os.path.join('MP_Data')
+
+# Etiquetar los datos procesados 
+x, y = load_processed_data(PROCESS_DATA_PATH) 
 
 # Dividir los datos en entrenamiento y prueba
-x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.1) # 10% de los datos para prueba*
+x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.05) # 10% de los datos para prueba*
 
 # Para el log board de tensorflow
 log_dir = os.path.join('Logs')
@@ -35,7 +39,7 @@ tb_callback = TensorBoard(log_dir=log_dir)
 # Crear el modelo
 
 model = Sequential()
-model.add(LSTM(64, return_sequences=True, activation='relu', input_shape=(30,1662)))
+model.add(LSTM(64, return_sequences=True, activation='relu', input_shape=(15,1662)))
 model.add(LSTM(128, return_sequences=True, activation='relu'))
 model.add(LSTM(64, return_sequences=False, activation='relu'))
 model.add(Dense(64, activation='relu'))
@@ -46,10 +50,10 @@ model.add(Dense(senas.shape[0], activation='softmax'))
 model.compile(optimizer='Adam', loss='categorical_crossentropy', metrics=['categorical_accuracy'])
 
 # Entrenar el modelo
-# model.fit(x_train, y_train, epochs=90, callbacks=[tb_callback])
+model.fit(x_train, y_train, epochs=90, callbacks=[tb_callback])
 
 # Guardar el modelo
-# model.save('action.h5')
+model.save('action.h5')
 
 # ---------------------------------------------------------------------
 # Probar el modelo
