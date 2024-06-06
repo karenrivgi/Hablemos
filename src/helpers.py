@@ -136,3 +136,41 @@ def prob_viz(res, actions, input_frame, colors) -> list:
         cv2.putText(output_frame, actions[num], (0, 85 + num * 40), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2, cv2.LINE_AA)
         
     return output_frame
+
+
+# ---------------------------------------------------------------------
+def draw_text(image, sentence):
+    # Crear una copia de la imagen original
+    output = image.copy()
+
+    altura_inicial = 50 # Altura inicial para el primer mensaje
+    espacio = 60 # Espacio entre los mensajes
+    font = cv2.FONT_HERSHEY_SIMPLEX
+    font_scale = 1
+
+    # Iterar sobre los elementos en sentence
+    for i, texto in enumerate(sentence):
+        # Calcular la altura del texto
+        altura = altura_inicial + (len(sentence) - 1 - i) * espacio
+
+        # Obtener el tamaño del texto
+        (text_width, text_height), _ = cv2.getTextSize(texto, font, font_scale, 2)
+
+        # Crear una copia de la imagen para dibujar el rectángulo y el texto
+        overlay = image.copy()
+
+        # Dibujar un rectángulo del tamaño del texto en la copia de la imagen
+        cv2.rectangle(overlay, (0, image.shape[0] - altura), (text_width + 20, image.shape[0] - altura + text_height + 20), (255, 255, 255), -1)
+
+        # Dibujar el texto en la copia de la imagen
+        cv2.putText(overlay, texto, (10, image.shape[0] - altura + text_height + 10), 
+                    font, font_scale, (0, 0, 0), 2, cv2.LINE_AA)
+
+        # Calcular el factor de transparencia
+        alpha = 1 - 0.8 * i / (len(sentence) - 1)
+
+        # Mezclar la copia de la imagen con la imagen original
+        cv2.addWeighted(overlay, alpha, output, 1 - alpha, 0, output)
+
+    # Reemplazar la imagen original con la imagen de salida
+    return output

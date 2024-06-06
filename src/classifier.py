@@ -9,7 +9,7 @@ import numpy as np
 # Módulo local
 from helpers import (
     mediapipe_detection, draw_styled_landmarks,
-    extract_keypoints, there_hand, prob_viz
+    extract_keypoints, there_hand, prob_viz, draw_text
 )
 from sound import text_to_speech
 
@@ -27,6 +27,7 @@ model = load_model('senas.h5')
 sequence = []        # Para almacenar las secuencias de frames
 sentence = []        # Para almacenar las predicciones
 predictions = []     # Para almacenar las predicciones en forma de índice
+
 THRESHOLD = 0.7      # Umbral para considerar una predicción como válida
 colors = [(245,117,16), (117,245,16), (16,117,245), (0,255,0)]  # Colores para la visualización
 
@@ -51,22 +52,20 @@ with mp_holistic.Holistic(min_detection_confidence=0.5, min_tracking_confidence=
         sequence.append(keypoints)
         sequence = sequence[-20:]  # Mantener solo los últimos 30 frames
 
-        # Si se han capturado 30 frames y hay una mano detectada
+        # Si se han capturado 20 frames y hay una mano detectada
         if len(sequence) == 20 and there_hand(results):
-            print('Hand detected')
             COUNT_FRAME += 1
             print(COUNT_FRAME)
         else:
-            print('Hand not detected')
             if COUNT_FRAME > 5:
                 # Realizar la predicción
                 res = model.predict(np.expand_dims(sequence, axis=0))[0]
                 sequence = []
-                print("resultado", res)
 
                 if res[np.argmax(res)] > THRESHOLD: 
                     predictions.append(np.argmax(res))
                     ultimo_res = res
+                    print(senas[np.argmax(res)])
                     print("resultado THRESHOLD", res)
                     # Traducción de texto a voz
                     text_to_speech(senas[np.argmax(res)])
@@ -78,18 +77,20 @@ with mp_holistic.Holistic(min_detection_confidence=0.5, min_tracking_confidence=
                     else:
                         sentence.append(senas[np.argmax(res)])
 
+                    print(dict(enumerate(reversed(sentence))))
+
                 COUNT_FRAME = 0
                 sequence = []
 
             # Mantener solo las últimas 5 predicciones en la oración
-            if len(sentence) > 5: 
-                sentence = sentence[-5:]
+            if len(sentence) > 4: 
+                sentence = sentence[-4:]
 
         # Visualizar las probabilidades
         image = prob_viz(ultimo_res if ultimo_res is not None else [0, 0, 0, 0], senas, image, colors)
-        cv2.rectangle(image, (0,0), (640, 40), (245, 117, 16), -1)
-        cv2.putText(image, ' '.join(sentence), (3, 30), 
-                    cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2, cv2.LINE_AA)
+        
+        # Visualizar las últimas 4 detecciones
+        image = draw_text(image, sentence)
 
         # Dibujar los landmarks
         draw_styled_landmarks(image, results)
