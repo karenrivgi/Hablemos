@@ -18,7 +18,7 @@ mp_holistic = mp.solutions.holistic # Holistic model
 mp_drawing = mp.solutions.drawing_utils # Drawing utilities
 
 # Definición de parámetros para la recoleccion de datos
-senas = np.array(['Amigo', 'Bien', 'Como Estas', 'Hola']) # Señas a interpretar
+senas = np.array(['Amigo', 'Bien', 'Como estas?', 'Hola']) # Señas a interpretar
 
 # Cargar el modelo entrenado
 model = load_model('senas.h5')
@@ -26,10 +26,9 @@ model = load_model('senas.h5')
 # Inicializar variables
 sequence = []        # Para almacenar las secuencias de frames
 sentence = []        # Para almacenar las predicciones
-predictions = []     # Para almacenar las predicciones en forma de índice
-
 THRESHOLD = 0.7      # Umbral para considerar una predicción como válida
-colors = [(245,117,16), (117,245,16), (16,117,245), (0,255,0)]  # Colores para la visualización
+
+# colors = [(245,117,16), (117,245,16), (16,117,245), (0,255,0)]  # Colores para la visualización
 
 # Inicializar la captura de video
 cap = cv2.VideoCapture(0)
@@ -63,14 +62,14 @@ with mp_holistic.Holistic(min_detection_confidence=0.5, min_tracking_confidence=
                 sequence = []
 
                 if res[np.argmax(res)] > THRESHOLD: 
-                    predictions.append(np.argmax(res))
                     ultimo_res = res
                     print(senas[np.argmax(res)])
                     print("resultado THRESHOLD", res)
+
                     # Traducción de texto a voz
                     text_to_speech(senas[np.argmax(res)])
 
-                    # Actualizar la oración con la nueva predicción
+                    # Actualizar la lista de predicciones con la nueva predicción
                     if len(sentence) > 0: 
                         if senas[np.argmax(res)] != sentence[-1]:
                             sentence.append(senas[np.argmax(res)])
@@ -82,12 +81,12 @@ with mp_holistic.Holistic(min_detection_confidence=0.5, min_tracking_confidence=
                 COUNT_FRAME = 0
                 sequence = []
 
-            # Mantener solo las últimas 5 predicciones en la oración
+            # Mantener solo las últimas 4 predicciones
             if len(sentence) > 4: 
                 sentence = sentence[-4:]
 
         # Visualizar las probabilidades
-        image = prob_viz(ultimo_res if ultimo_res is not None else [0, 0, 0, 0], senas, image, colors)
+        # image = prob_viz(ultimo_res if ultimo_res is not None else [0, 0, 0, 0], senas, image, colors)
         
         # Visualizar las últimas 4 detecciones
         image = draw_text(image, sentence)
