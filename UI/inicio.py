@@ -1,8 +1,10 @@
+# Importar las librerías requeridas
+import threading
 import tkinter as tk
 from tkinter import ttk
 import classifier
-import threading
 from PIL import Image, ImageTk
+from text2sign import search
 
 
 def open_classifier_window():
@@ -26,13 +28,43 @@ def open_classifier_window():
     window.protocol("WM_DELETE_WINDOW", on_close)
 
 def open_text2sign_window():
-    # Limpiar el frame
-    for widget in main_frame.winfo_children():
-        widget.destroy()
+    """
+    Abre una ventana para buscar videos de lenguaje de señas.
 
-    # Aquí puedes colocar el código para abrir la ventana de text2sign
-    label = tk.Label(main_frame, text="Ventana de Text2Sign")
-    label.pack()
+    Crea una nueva ventana con una barra de búsqueda donde se puede ingresar
+    el término de búsqueda. Al presionar el botón "Buscar", se muestra el
+    video correspondiente a la búsqueda en un widget Label.
+
+    Returns:
+        None
+    """
+    # Crear una nueva ventana para la búsqueda
+    search_window = tk.Toplevel(window)
+    search_window.title("Text2Sign")
+    search_window.geometry("640x480")
+
+    # Crear un frame para la barra de búsqueda
+    search_frame = ttk.Frame(search_window)
+    search_frame.pack(fill=tk.X, pady=10)
+
+    # Crear una variable de cadena para el texto de búsqueda
+    search_var = tk.StringVar()
+
+    # Crear la barra de búsqueda
+    search_entry = ttk.Entry(search_frame, textvariable=search_var)
+    search_entry.pack(side=tk.LEFT, padx=10, expand=True, fill=tk.X)
+
+    # Crear un botón para iniciar la búsqueda
+    search_button = ttk.Button(search_frame, text="Buscar", command=lambda: search(search_var, video_label))
+    search_button.pack(side=tk.RIGHT, padx=10)
+
+    # Crear un label para mostrar el video
+    video_label = tk.Label(search_window)
+    video_label.pack()
+
+    # Enfocar la barra de búsqueda al abrir la ventana
+    search_entry.focus()
+
 
 def open_dictionary_window():
     # Limpiar el frame
