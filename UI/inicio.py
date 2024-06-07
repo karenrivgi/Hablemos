@@ -1,13 +1,29 @@
+"""
+Módulo para el manejo de la interfaz gráfica de usuario (GUI) con tkinter.
+"""
+
 # Importar las librerías requeridas
 import threading
 import tkinter as tk
 from tkinter import ttk
 import classifier
+import dictionary
 from PIL import Image, ImageTk
 from text2sign import search
 
-
+# -----------------------------------------------------------
 def open_classifier_window():
+    """
+    Ejecuta el clasificador de lenguaje de señas en un hilo separado.
+
+    Crea una nueva ventana con un label donde se mostrará el video de la cámara.
+    Luego, ejecuta el código en classifier.py en un hilo separado para mostrar
+    el video y realizar la clasificación de lenguaje de señas.
+
+    Returns:
+        None
+    """
+
      # Limpiar el frame
     for widget in main_frame.winfo_children():
         widget.destroy()
@@ -27,6 +43,8 @@ def open_classifier_window():
 
     window.protocol("WM_DELETE_WINDOW", on_close)
 
+
+# -----------------------------------------------------------
 def open_text2sign_window():
     """
     Abre una ventana para buscar videos de lenguaje de señas.
@@ -66,14 +84,26 @@ def open_text2sign_window():
     search_entry.focus()
 
 
+# -----------------------------------------------------------
 def open_dictionary_window():
+    """
+    Ejecuta la función principal del módulo dictionary.py en el frame principal.
+
+    La función principal de dictionary se encarga de mostrar el diccionario de
+    lenguaje de señas en la interfaz gráfica de usuario.
+
+    Returns:
+        None
+    """
     # Limpiar el frame
     for widget in main_frame.winfo_children():
         widget.destroy()
 
-    # Aquí puedes colocar el código para abrir la ventana del diccionario
-    label = tk.Label(main_frame, text="Ventana del Diccionario")
-    label.pack()
+    # Ejecutar la función principal de dictionary en el frame principal
+    dictionary.main(main_frame)
+
+
+# -----------------------------------------------------------
 
 # Crear la ventana principal
 window = tk.Tk()
@@ -91,7 +121,7 @@ image_label = tk.Label(image_frame)
 image_label.pack()
 
 # Cargar la imagen
-image = Image.open("UI\Fondo.png")
+image = Image.open("UI\Imagenes\Fondo.png")
 
 # Redimensionar la imagen al tamaño por defecto de cv2 (640x480)
 image = image.resize((640, 480))
