@@ -107,6 +107,7 @@ def open_dictionary_window():
 
 # Crear la ventana principal
 window = tk.Tk()
+window.title("Hablemos")
 
 # Crear el frame principal
 main_frame = ttk.Frame(window)
@@ -137,10 +138,10 @@ image_label.image = photo  # Guardar una referencia a la imagen para evitar que 
 button_frame = ttk.Frame(window)
 button_frame.pack(fill=tk.X)
 
-classifier_button = tk.Button(button_frame, text="Clasificador", command=open_classifier_window)
+classifier_button = tk.Button(button_frame, text="Señas a Texto", command=open_classifier_window)
 classifier_button.pack(side=tk.LEFT, fill=tk.X, expand=True)
 
-text2sign_button = tk.Button(button_frame, text="Text2Sign", command=open_text2sign_window)
+text2sign_button = tk.Button(button_frame, text="Texto a Señas", command=open_text2sign_window)
 text2sign_button.pack(side=tk.LEFT, fill=tk.X, expand=True)
 
 dictionary_button = tk.Button(button_frame, text="Diccionario", command=open_dictionary_window)
