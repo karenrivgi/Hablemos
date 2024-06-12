@@ -1,0 +1,7 @@
+numpy
+tensorflow==2.16.1
+keras==3.3.3
+scikit-learn
+mediapipe
+opencv-python
+pillow
